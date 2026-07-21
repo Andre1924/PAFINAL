@@ -8,27 +8,47 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://pafinal-production.up.railway.app/socket.io/socket.io.js"></script>
 </head>
+
 <body>
+
     <div class="container">
+
+        <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
+
         <h1>Panel de Mozo</h1>
+
         <form id="order-form">
+
             <label for="mesa">Mesa:</label>
             <select id="mesa" required>
                 <option value="Mesa 1">Mesa 1</option>
                 <option value="Mesa 2">Mesa 2</option>
                 <option value="Mesa 3">Mesa 3</option>
             </select>
-            
+
             <label for="platos">Platos:</label>
-            <input type="text" id="platos" required placeholder="Lomo Saltado, Chicha Morada...">
-            
-            <button type="submit">Enviar Pedido a Cocina</button>
+            <input 
+                type="text" 
+                id="platos" 
+                required 
+                placeholder="Lomo Saltado, Chicha Morada..."
+            >
+
+            <button type="submit">
+                Enviar Pedido a Cocina
+            </button>
+
         </form>
 
+
         <h2>Mis Pedidos en Curso</h2>
+
         <div id="orders-container"></div>
+
     </div>
 
+
     <script src="app.js"></script>
+
 </body>
 </html>
