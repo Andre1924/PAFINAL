@@ -1,5 +1,5 @@
-// Detecta la URL del servidor automáticamente (funciona en localhost y en Railway)
-const API_URL = window.location.origin;
+// URL directa de tu backend desplegado en Railway
+const API_URL = 'https://pafinal-production.up.railway.app';
 
 // --- RUTAS Y PROTECCIÓN DE PÁGINAS ---
 const currentPage = window.location.pathname.split('/').pop();
