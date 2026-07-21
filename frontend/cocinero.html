@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Panel de Cocina - Domo Saltado</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="http://localhost:3000/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <div class="container">
+        <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
+        <div class="masthead">
+            <span class="eyebrow">Domo Saltado</span>
+            <h1>Dashboard de Cocina 👨‍🍳</h1>
+        </div>
+        <div class="panel-shell">
+            <div id="kitchenOrdersList"></div>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
