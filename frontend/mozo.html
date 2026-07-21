@@ -1,44 +1,34 @@
+<!-- mozo.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de Mozo - Domo Saltado</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script src="https://pafinal-production.up.railway.app/socket.io/socket.io.js"></script>
 </head>
 <body>
     <div class="container">
-        <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
-        <div class="masthead">
-            <span class="eyebrow">Domo Saltado</span>
-            <h1>Panel de Mozo 📝</h1>
-        </div>
+        <h1>Panel de Mozo</h1>
+        <form id="order-form">
+            <label for="mesa">Mesa:</label>
+            <select id="mesa" required>
+                <option value="Mesa 1">Mesa 1</option>
+                <option value="Mesa 2">Mesa 2</option>
+                <option value="Mesa 3">Mesa 3</option>
+            </select>
+            
+            <label for="platos">Platos:</label>
+            <input type="text" id="platos" required placeholder="Lomo Saltado, Chicha Morada...">
+            
+            <button type="submit">Enviar Pedido a Cocina</button>
+        </form>
 
-        <div class="panel-shell">
-            <h2>Nuevo Pedido</h2>
-            <form id="orderForm">
-                <div class="form-group">
-                    <label>Mesa:</label>
-                    <select id="mesa" required>
-                        <option value="Mesa 1">Mesa 1</option>
-                        <option value="Mesa 2">Mesa 2</option>
-                        <option value="Mesa 3">Mesa 3</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Platos (separados por coma):</label>
-                    <input type="text" id="platos" placeholder="Lomo Saltado, Chicha Morada..." required>
-                </div>
-                <button type="submit">Enviar Pedido a Cocina</button>
-            </form>
-
-            <h2>Mis Pedidos en Curso</h2>
-            <div id="ordersList"></div>
-        </div>
+        <h2>Mis Pedidos en Curso</h2>
+        <div id="orders-container"></div>
     </div>
+
     <script src="app.js"></script>
 </body>
 </html>
