@@ -4,31 +4,49 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Domo Saltado - Login</title>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <div class="container">
+
         <div class="masthead">
             <span class="eyebrow">Sistema de comandas</span>
         </div>
+
         <div class="ticket">
             <h1>Domo Saltado</h1>
+
             <form id="loginForm">
+
                 <div class="form-group">
                     <label>Usuario:</label>
                     <input type="text" id="username" required placeholder="mozo1 o chef1">
                 </div>
+
                 <div class="form-group">
                     <label>Contraseña:</label>
                     <input type="password" id="password" required placeholder="123">
                 </div>
+
                 <button type="submit">Iniciar Sesión</button>
+
                 <p id="errorMsg" style="color: red;"></p>
+
             </form>
         </div>
+
     </div>
+
+
+    <!-- Socket.IO debe cargarse antes de app.js -->
+    <script src="https://pafinal-production.up.railway.app/socket.io/socket.io.js"></script>
+
     <script src="app.js"></script>
+
 </body>
 </html>
