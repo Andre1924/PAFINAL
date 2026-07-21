@@ -1,0 +1,8 @@
+{
+  "name": "domo-saltado-frontend",
+  "version": "1.0.0",
+  "description": "Frontend estático para Domo Saltado",
+  "scripts": {
+    "start": "npx serve -s . -l $PORT"
+  }
+}
