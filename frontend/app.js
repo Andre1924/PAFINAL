@@ -7,9 +7,12 @@ const socket = io(API_URL, {
 
 document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('loginForm');
+    
     if (loginForm) {
-        loginForm.addEventListener('submit', async (e) => {
+        loginForm.addEventListener('submit', async function(e) {
             e.preventDefault();
+            e.stopPropagation();
+
             const usernameInput = document.getElementById('username').value;
             const passwordInput = document.getElementById('password').value;
             const errorMsg = document.getElementById('errorMsg');
@@ -48,6 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     errorMsg.textContent = 'error de conexión con el servidor';
                 }
             }
+            return false;
         });
     }
 
