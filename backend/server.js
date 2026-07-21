@@ -62,7 +62,6 @@ async function crearUsuariosIniciales() {
 // ==========================================
 // RUTAS REST
 // ==========================================
-// Ruta raíz para servir el index.html apuntando correctamente a /frontend
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'frontend', 'index.html'));
 });
