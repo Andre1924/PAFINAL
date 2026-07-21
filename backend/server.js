@@ -59,7 +59,7 @@ async function crearUsuariosIniciales() {
 // RUTAS REST
 // ==========================================
 app.get('/', (req, res) => {
-    res.send('Servidor del Domo Saltado activo y funcionando');
+    res.status(200).send('Servidor del Domo Saltado activo y funcionando');
 });
 
 app.post('/api/login', async (req, res) => {
@@ -144,17 +144,24 @@ io.on('connection', async (socket) => {
 });
 
 // ==========================================
-// CONEXIÓN Y PUERTO (Adaptado a Railway)
+// CONEXIÓN A MONGODB Y APERTURA DE PUERTO
 // ==========================================
 const MONGO_URI = process.env.MONGO_URI;
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 
-mongoose.connect(MONGO_URI)
-    .then(async () => {
-        console.log('Conectado a MongoDB Atlas');
-        await crearUsuariosIniciales();
-        server.listen(PORT, '0.0.0.0', () => {
-            console.log(`Servidor activo en puerto ${PORT}`);
-        });
-    })
-    .catch(err => console.error('Error al conectar a MongoDB:', err));
+// 1. Iniciar servidor Web/HTTP inmediatamente
+server.listen(PORT, '0.0.0.0', () => {
+    console.log(`Servidor activo en puerto ${PORT}`);
+});
+
+// 2. Conectar a MongoDB Atlas si existe URI
+if (MONGO_URI) {
+    mongoose.connect(MONGO_URI)
+        .then(async () => {
+            console.log('Conectado a MongoDB Atlas');
+            await crearUsuariosIniciales();
+        })
+        .catch(err => console.error('Error al conectar a MongoDB:', err));
+} else {
+    console.warn('ADVERTENCIA: La variable MONGO_URI no está definida en Railway.');
+}
