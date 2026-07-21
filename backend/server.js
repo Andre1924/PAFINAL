@@ -12,8 +12,8 @@ const server = http.createServer(app);
 app.use(cors());
 app.use(express.json());
 
-// Servir los archivos estáticos de la carpeta frontend desde la nube
-app.use(express.static(path.join(__dirname, '../frontend')));
+// Servir los archivos estáticos desde la subcarpeta frontend
+app.use(express.static(path.join(__dirname, 'frontend')));
 
 const io = new Server(server, {
     cors: { 
@@ -62,9 +62,8 @@ async function crearUsuariosIniciales() {
 // ==========================================
 // RUTAS REST
 // ==========================================
-// Ruta raíz para servir el index.html del frontend
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '../frontend/index.html'));
+    res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
 });
 
 app.post('/api/login', async (req, res) => {
