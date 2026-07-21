@@ -1,185 +1,830 @@
 // server.js
+
 require('dotenv').config();
+
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
 const mongoose = require('mongoose');
 
+
+
 const app = express();
+
 const server = http.createServer(app);
 
-app.use(cors());
+
+
+
+// ==============================
+// MIDDLEWARE
+// ==============================
+
+
+app.use(cors({
+    origin:"*"
+}));
+
+
 app.use(express.json());
 
-const io = new Server(server, {
-    cors: { 
-        origin: "*",
-        methods: ["GET", "POST"]
+
+
+
+// ==============================
+// SOCKET.IO
+// ==============================
+
+
+const io = new Server(server,{
+
+    cors:{
+
+        origin:"*",
+
+        methods:["GET","POST"]
+
     }
+
 });
 
-// ==========================================
-// MODELOS DE DATOS (Schemas de Mongoose)
-// ==========================================
+
+
+
+
+
+
+// ==============================
+// MODELOS MONGODB
+// ==============================
+
+
+
 const userSchema = new mongoose.Schema({
-    username: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
-    role: { type: String, enum: ['mozo', 'cocinero'], required: true }
+
+
+    username:{
+
+        type:String,
+
+        required:true,
+
+        unique:true
+
+    },
+
+
+    password:{
+
+        type:String,
+
+        required:true
+
+    },
+
+
+    role:{
+
+        type:String,
+
+        enum:[
+
+            'mozo',
+
+            'cocinero'
+
+        ],
+
+        required:true
+
+    }
+
+
 });
-const User = mongoose.model('User', userSchema);
+
+
+
+const User = mongoose.model(
+    'User',
+    userSchema
+);
+
+
+
+
+
+
+
 
 const orderSchema = new mongoose.Schema({
-    mesa: { type: String, required: true },
-    platos: { type: String, required: true },
-    mozo: { type: String, required: true },
-    estado: { type: String, enum: ['Pendiente', 'En Preparación', 'Listo para Servir'], default: 'Pendiente' }
-}, { timestamps: true });
 
-const Order = mongoose.model('Order', orderSchema);
 
-// ==========================================
-// CREACIÓN AUTOMÁTICA DE USUARIOS
-// ==========================================
-async function crearUsuariosIniciales() {
-    try {
-        const conteo = await User.countDocuments();
-        if (conteo === 0) {
+    mesa:{
+
+
+        type:String,
+
+        required:true
+
+
+    },
+
+
+    platos:{
+
+
+        type:String,
+
+        required:true
+
+
+    },
+
+
+    mozo:{
+
+
+        type:String,
+
+        required:true
+
+
+    },
+
+
+    estado:{
+
+
+        type:String,
+
+
+        enum:[
+
+            'Pendiente',
+
+            'En Preparación',
+
+            'Listo para Servir'
+
+        ],
+
+
+        default:'Pendiente'
+
+
+    }
+
+
+},{
+
+    timestamps:true
+
+});
+
+
+
+const Order = mongoose.model(
+    'Order',
+    orderSchema
+);
+
+
+
+
+
+
+
+
+
+// ==============================
+// CREAR USUARIOS INICIALES
+// ==============================
+
+
+
+async function crearUsuariosIniciales(){
+
+
+    try{
+
+
+        const cantidad =
+        await User.countDocuments();
+
+
+
+        if(cantidad===0){
+
+
+
             await User.create([
-                { username: 'mozo1', password: '123', role: 'mozo' },
-                { username: 'chef1', password: '123', role: 'cocinero' }
+
+
+                {
+
+                    username:'mozo1',
+
+                    password:'123',
+
+                    role:'mozo'
+
+                },
+
+
+                {
+
+                    username:'chef1',
+
+                    password:'123',
+
+                    role:'cocinero'
+
+                }
+
+
             ]);
-            console.log('Usuarios de prueba creados.');
-        }
-    } catch (err) {
-        console.error('Error al verificar o crear usuarios iniciales:', err);
-    }
-}
 
-// ==========================================
-// RUTAS REST
-// ==========================================
-app.get('/', (req, res) => {
-    res.json({ status: 'ok', message: 'Backend de Domo Saltado funcionando correctamente.' });
-});
 
-app.post('/api/login', async (req, res) => {
-    const { username, password } = req.body;
-    try {
-        const user = await User.findOne({ username, password });
-        if (user) {
-            res.json({ success: true, role: user.role, username: user.username });
-        } else {
-            res.status(401).json({ success: false, message: 'Credenciales inválidas' });
-        }
-    } catch (error) {
-        res.status(500).json({ success: false, message: 'Error interno en el servidor' });
-    }
-});
 
-// ==========================================
-// WEBSOCKETS
-// ==========================================
-io.on('connection', async (socket) => {
-    try {
-        const orders = await Order.find().sort({ createdAt: -1 }).limit(20);
-        const formattedOrders = orders.map(o => ({
-            id: o._id,
-            mesa: o.mesa,
-            platos: o.platos,
-            mozo: o.mozo,
-            estado: o.estado,
-            timestamp: o.createdAt.toLocaleTimeString()
-        }));
-        socket.emit('load_orders', formattedOrders);
-    } catch (err) {
-        console.error('Error al cargar pedidos iniciales:', err);
-    }
-
-    socket.on('new_order', async (orderData) => {
-        try {
-            const newOrder = new Order({
-                mesa: orderData.mesa,
-                platos: orderData.platos,
-                mozo: orderData.mozo
-            });
-            await newOrder.save();
-            
-            io.emit('order_added', {
-                id: newOrder._id,
-                mesa: newOrder.mesa,
-                platos: newOrder.platos,
-                mozo: newOrder.mozo,
-                estado: newOrder.estado,
-                timestamp: newOrder.createdAt.toLocaleTimeString()
-            });
-        } catch (err) {
-            console.error('Error al guardar el pedido:', err);
-        }
-    });
-
-    socket.on('update_order_status', async (data) => {
-        if (!mongoose.Types.ObjectId.isValid(data.orderId)) return;
-
-        try {
-            const updatedOrder = await Order.findByIdAndUpdate(
-                data.orderId,
-                { estado: data.newStatus },
-                { new: true }
+            console.log(
+                "Usuarios iniciales creados"
             );
 
-            if (updatedOrder) {
-                io.emit('order_status_changed', {
-                    id: updatedOrder._id,
-                    mesa: updatedOrder.mesa,
-                    platos: updatedOrder.platos,
-                    mozo: updatedOrder.mozo,
-                    estado: updatedOrder.estado,
-                    timestamp: updatedOrder.updatedAt.toLocaleTimeString()
-                });
-            }
-        } catch (err) {
-            console.error('Error al actualizar el estado:', err);
+
         }
+
+
+
+    }catch(error){
+
+
+        console.error(
+            "Error creando usuarios:",
+            error
+        );
+
+
+    }
+
+
+}
+
+
+
+
+
+
+
+
+
+// ==============================
+// RUTAS
+// ==============================
+
+
+
+app.get('/',(req,res)=>{
+
+
+    res.json({
+
+        status:"ok",
+
+        message:
+        "Backend Domo Saltado funcionando"
+
     });
+
+
 });
-// ==========================================
-// CONEXIÓN A MONGODB Y APERTURA DE PUERTO
-// ==========================================
-
-const MONGO_URI = process.env.MONGO_URI;
-const PORT = process.env.PORT || 8080;
 
 
-if (MONGO_URI) {
-
-    mongoose.connect(MONGO_URI)
-
-        .then(async () => {
-
-            console.log('Conectado a MongoDB Atlas');
-
-            await crearUsuariosIniciales();
 
 
-            server.listen(PORT, '0.0.0.0', () => {
-
-                console.log(`Servidor activo en puerto ${PORT}`);
-
-            });
 
 
-        })
 
-        .catch(err => {
+app.post('/api/login',async(req,res)=>{
 
-            console.error('Error al conectar a MongoDB:', err);
+
+    const {
+        username,
+        password
+    } = req.body;
+
+
+
+    try{
+
+
+        const user =
+        await User.findOne({
+
+            username,
+
+            password
 
         });
 
 
-} else {
 
-    console.warn('ADVERTENCIA: La variable MONGO_URI no está definida en Railway.');
+
+
+        if(!user){
+
+
+            return res.status(401).json({
+
+                success:false,
+
+                message:
+                "Credenciales inválidas"
+
+            });
+
+
+        }
+
+
+
+
+
+        res.json({
+
+
+            success:true,
+
+
+            username:user.username,
+
+
+            role:user.role
+
+
+        });
+
+
+
+    }catch(error){
+
+
+        console.error(error);
+
+
+
+        res.status(500).json({
+
+            success:false,
+
+            message:
+            "Error interno"
+
+        });
+
+
+    }
+
+
+
+});
+
+
+
+
+
+
+
+
+
+
+
+// ==============================
+// SOCKETS
+// ==============================
+
+
+io.on('connection',async(socket)=>{
+
+
+
+    console.log(
+        "Cliente conectado:",
+        socket.id
+    );
+
+
+
+
+
+    // Cargar pedidos existentes
+
+
+    try{
+
+
+        const orders =
+        await Order.find()
+        .sort({
+            createdAt:-1
+        })
+        .limit(50);
+
+
+
+
+
+        const formattedOrders =
+        orders.map(order=>({
+
+
+
+            id:order._id,
+
+
+            mesa:order.mesa,
+
+
+            platos:order.platos,
+
+
+            mozo:order.mozo,
+
+
+            estado:order.estado,
+
+
+            timestamp:
+            new Date(order.createdAt)
+            .toLocaleTimeString()
+
+
+
+        }));
+
+
+
+
+
+        socket.emit(
+            'load_orders',
+            formattedOrders
+        );
+
+
+
+    }catch(error){
+
+
+        console.error(
+            "Error cargando pedidos:",
+            error
+        );
+
+
+    }
+
+
+
+
+
+
+
+
+
+    // ==========================
+    // NUEVO PEDIDO
+    // ==========================
+
+
+
+    socket.on(
+        'new_order',
+        async(data)=>{
+
+
+        try{
+
+
+            const order =
+            new Order({
+
+
+                mesa:data.mesa,
+
+
+                platos:data.platos,
+
+
+                mozo:data.mozo
+
+
+
+            });
+
+
+
+            await order.save();
+
+
+
+
+
+            io.emit(
+                'order_added',
+                {
+
+
+                    id:order._id,
+
+
+                    mesa:order.mesa,
+
+
+                    platos:order.platos,
+
+
+                    mozo:order.mozo,
+
+
+                    estado:order.estado,
+
+
+                    timestamp:
+                    new Date(order.createdAt)
+                    .toLocaleTimeString()
+
+
+                }
+            );
+
+
+
+
+
+        }catch(error){
+
+
+            console.error(
+                "Error guardando pedido:",
+                error
+            );
+
+
+        }
+
+
+
+    });
+
+
+
+
+
+
+
+
+
+    // ==========================
+    // CAMBIAR ESTADO
+    // ==========================
+
+
+
+    socket.on(
+        'update_order_status',
+        async(data)=>{
+
+
+
+        try{
+
+
+
+            if(
+                !mongoose.Types.ObjectId
+                .isValid(data.orderId)
+            ){
+
+                return;
+
+            }
+
+
+
+
+
+
+
+            const updated =
+            await Order.findByIdAndUpdate(
+
+
+                data.orderId,
+
+
+                {
+
+
+                    estado:
+                    data.newStatus
+
+
+                },
+
+
+                {
+
+
+                    new:true
+
+
+                }
+
+
+            );
+
+
+
+
+
+
+
+            if(updated){
+
+
+
+                io.emit(
+
+                    'order_status_changed',
+
+                    {
+
+
+                        id:updated._id,
+
+
+                        mesa:updated.mesa,
+
+
+                        platos:updated.platos,
+
+
+                        mozo:updated.mozo,
+
+
+                        estado:updated.estado,
+
+
+                        timestamp:
+
+                        new Date(updated.updatedAt)
+                        .toLocaleTimeString()
+
+
+                    }
+
+                );
+
+
+
+            }
+
+
+
+
+
+        }catch(error){
+
+
+            console.error(
+
+                "Error actualizando estado:",
+
+                error
+
+            );
+
+
+        }
+
+
+
+
+    });
+
+
+
+
+
+
+
+
+
+    socket.on(
+        'disconnect',
+        ()=>{
+
+
+        console.log(
+            "Cliente desconectado:",
+            socket.id
+        );
+
+
+    });
+
+
+
+
+});
+
+
+
+
+
+
+
+
+
+// ==============================
+// CONEXION MONGO + SERVIDOR
+// ==============================
+
+
+
+const PORT =
+process.env.PORT || 8080;
+
+
+
+const MONGO_URI =
+process.env.MONGO_URI;
+
+
+
+
+
+
+if(!MONGO_URI){
+
+
+    console.error(
+        "Falta MONGO_URI"
+    );
+
+
+}else{
+
+
+    mongoose.connect(MONGO_URI)
+
+
+    .then(async()=>{
+
+
+        console.log(
+            "MongoDB conectado"
+        );
+
+
+
+        await crearUsuariosIniciales();
+
+
+
+
+
+        server.listen(
+            PORT,
+            "0.0.0.0",
+            ()=>{
+
+
+            console.log(
+                `Servidor activo puerto ${PORT}`
+            );
+
+
+        });
+
+
+
+    })
+
+
+
+    .catch(error=>{
+
+
+        console.error(
+            "Error MongoDB:",
+            error
+        );
+
+
+    });
+
+
 
 }
