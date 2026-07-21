@@ -6,12 +6,15 @@ const socket = io(API_URL, {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-    const loginForm = document.getElementById('login-form');
+    const loginForm = document.getElementById('loginForm');
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const usernameInput = document.getElementById('username').value;
             const passwordInput = document.getElementById('password').value;
+            const errorMsg = document.getElementById('errorMsg');
+
+            if (errorMsg) errorMsg.textContent = '';
 
             try {
                 const response = await fetch(`${API_URL}/api/login`, {
@@ -24,8 +27,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const data = await response.json();
 
-                if (data.success) {
-                    localStorage.setItem('username', data.username);
+                if (response.ok && data.success) {
+                    localStorage.setItem('username', data.username || usernameInput);
                     localStorage.setItem('role', data.role);
                     if (data.role === 'mozo') {
                         window.location.href = 'mozo.html';
@@ -33,10 +36,19 @@ document.addEventListener('DOMContentLoaded', () => {
                         window.location.href = 'cocinero.html';
                     }
                 } else {
-                    alert(data.message || 'credenciales inválidas');
+                    if (errorMsg) {
+                        errorMsg.textContent = data.message || 'credenciales inválidas';
+                    } else {
+                        alert(data.message || 'credenciales inválidas');
+                    }
                 }
             } catch (err) {
                 console.error('error en el login:', err);
+                if (errorMsg) {
+                    errorMsg.textContent = 'no se pudo conectar con el servidor.';
+                } else {
+                    alert('no se pudo conectar con el servidor.');
+                }
             }
         });
     }
