@@ -8,19 +8,22 @@ const mongoose = require('mongoose');
 const app = express();
 const server = http.createServer(app);
 
-app.use(cors());
+app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST'],
+    credentials: true
+}));
 app.use(express.json());
 
 const io = new Server(server, {
     cors: { 
-        origin: "*",
-        methods: ["GET", "POST"]
-    }
+        origin: '*',
+        methods: ['GET', 'POST'],
+        credentials: true
+    },
+    transports: ['websocket', 'polling']
 });
 
-// ==========================================
-// MODELOS DE DATOS (Schemas de Mongoose)
-// ==========================================
 const userSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
     password: { type: String, required: true },
@@ -37,9 +40,6 @@ const orderSchema = new mongoose.Schema({
 
 const Order = mongoose.model('Order', orderSchema);
 
-// ==========================================
-// CREACIÓN AUTOMÁTICA DE USUARIOS
-// ==========================================
 async function crearUsuariosIniciales() {
     try {
         const conteo = await User.countDocuments();
@@ -55,9 +55,6 @@ async function crearUsuariosIniciales() {
     }
 }
 
-// ==========================================
-// RUTAS REST
-// ==========================================
 app.get('/', (req, res) => {
     res.json({ status: 'ok', message: 'Backend de Domo Saltado funcionando correctamente.' });
 });
@@ -76,9 +73,6 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// ==========================================
-// WEBSOCKETS
-// ==========================================
 io.on('connection', async (socket) => {
     try {
         const orders = await Order.find().sort({ createdAt: -1 }).limit(20);
@@ -143,9 +137,6 @@ io.on('connection', async (socket) => {
     });
 });
 
-// ==========================================
-// CONEXIÓN A MONGODB Y APERTURA DE PUERTO
-// ==========================================
 const MONGO_URI = process.env.MONGO_URI;
 const PORT = process.env.PORT || 8080;
 
