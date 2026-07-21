@@ -1,12 +1,9 @@
-// URL directa de tu backend desplegado en Railway
 const API_URL = 'https://pafinal-production.up.railway.app';
 
-// --- RUTAS Y PROTECCIÓN DE PÁGINAS ---
 const currentPage = window.location.pathname.split('/').pop();
 const currentUser = localStorage.getItem('username');
 const currentRole = localStorage.getItem('role');
 
-// Proteger rutas según el rol
 if (currentPage === 'mozo.html' && currentRole !== 'mozo') window.location.href = 'index.html';
 if (currentPage === 'cocinero.html' && currentRole !== 'cocinero') window.location.href = 'index.html';
 
@@ -15,7 +12,6 @@ function logout() {
     window.location.href = 'index.html';
 }
 
-// --- LÓGICA DE LOGIN (index.html) ---
 const loginForm = document.getElementById('loginForm');
 if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
@@ -39,26 +35,29 @@ if (loginForm) {
                 document.getElementById('errorMsg').innerText = data.message;
             }
         } catch (error) {
-            document.getElementById('errorMsg').innerText = 'No se pudo conectar con el servidor backend.';
+            document.getElementById('errorMsg').innerText = 'no se pudo conectar con el servidor backend.';
         }
     });
 }
 
-// --- LÓGICA DE WEBSOCKETS (mozo.html y cocinero.html) ---
 if (currentPage === 'mozo.html' || currentPage === 'cocinero.html') {
-    const socket = io(API_URL);
-
-    // Cargar pedidos iniciales desde MongoDB
-    socket.on('load_orders', (orders) => {
-        orders.forEach(order => renderOrder(order));
+    const socket = io(API_URL, {
+        transports: ['websocket', 'polling']
     });
 
-    // Escuchar cuando se agrega un nuevo pedido
+    socket.on('load_orders', (orders) => {
+        const listId = currentRole === 'mozo' ? 'ordersList' : 'kitchenOrdersList';
+        const container = document.getElementById(listId);
+        if (container) {
+            container.innerHTML = '';
+            orders.forEach(order => renderOrder(order));
+        }
+    });
+
     socket.on('order_added', (order) => {
         renderOrder(order);
     });
 
-    // Escuchar cuando cambia el estado de un pedido (notificación en tiempo real)
     socket.on('order_status_changed', (updatedOrder) => {
         const orderEl = document.getElementById(`order-${updatedOrder.id}`);
         if (orderEl) {
@@ -69,12 +68,13 @@ if (currentPage === 'mozo.html' || currentPage === 'cocinero.html') {
             orderEl.replaceWith(newOrderEl);
             
             if (currentRole === 'mozo' && updatedOrder.estado === 'Listo para Servir' && updatedOrder.mozo === currentUser) {
-                alert(`¡NOTIFICACIÓN: El pedido de la ${updatedOrder.mesa} está Listo para Servir!`);
+                alert(`¡notificación: el pedido de la ${updatedOrder.mesa} está listo para servir!`);
             }
+        } else {
+            renderOrder(updatedOrder);
         }
     });
 
-    // --- Funcionalidad del Mozo ---
     const orderForm = document.getElementById('orderForm');
     if (orderForm) {
         orderForm.addEventListener('submit', (e) => {
@@ -87,13 +87,11 @@ if (currentPage === 'mozo.html' || currentPage === 'cocinero.html') {
         });
     }
 
-    // --- Funcionalidad del Cocinero ---
     window.changeStatus = function(orderId, newStatus) {
         socket.emit('update_order_status', { orderId, newStatus });
     };
 }
 
-// --- FUNCIONES DE INTERFAZ (Renderizado) ---
 function getBadgeClass(status) {
     if (status === 'Pendiente') return 'pendiente';
     if (status === 'En Preparación') return 'preparacion';
