@@ -12,8 +12,8 @@ const server = http.createServer(app);
 app.use(cors());
 app.use(express.json());
 
-// Servir archivos estáticos del frontend (HTML, CSS, JS)
-app.use(express.static(path.join(__dirname, '../frontend')));
+// Servir archivos estáticos si los tienes en la carpeta raíz del backend
+app.use(express.static(__dirname));
 
 const io = new Server(server, {
     cors: { 
@@ -62,6 +62,10 @@ async function crearUsuariosIniciales() {
 // ==========================================
 // RUTAS REST
 // ==========================================
+app.get('/', (req, res) => {
+    res.send('Servidor del Domo Saltado activo y conectado a MongoDB Atlas');
+});
+
 app.post('/api/login', async (req, res) => {
     const { username, password } = req.body;
     try {
@@ -74,11 +78,6 @@ app.post('/api/login', async (req, res) => {
     } catch (error) {
         res.status(500).json({ success: false, message: 'Error interno en el servidor' });
     }
-});
-
-// Redirección por defecto al frontend
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 
 // ==========================================
@@ -158,7 +157,7 @@ mongoose.connect(MONGO_URI)
     .then(async () => {
         console.log('Conectado a MongoDB Atlas');
         await crearUsuariosIniciales();
-        server.listen(PORT, () => {
+        server.listen(PORT, '0.0.0.0', () => {
             console.log(`Servidor activo en puerto ${PORT}`);
         });
     })
