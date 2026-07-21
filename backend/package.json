@@ -10,7 +10,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.6.1",
     "express": "^4.22.2",
-    "mongoose": "^9.8.0",
+    "mongoose": "^8.9.0",
     "socket.io": "^4.8.3"
   }
 }
