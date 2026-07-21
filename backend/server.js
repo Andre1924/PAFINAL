@@ -4,12 +4,16 @@ const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
 
 app.use(cors());
 app.use(express.json());
+
+// Servir los archivos estáticos de la carpeta frontend desde la nube
+app.use(express.static(path.join(__dirname, '../frontend')));
 
 const io = new Server(server, {
     cors: { 
@@ -58,8 +62,9 @@ async function crearUsuariosIniciales() {
 // ==========================================
 // RUTAS REST
 // ==========================================
+// Ruta raíz para servir el index.html del frontend
 app.get('/', (req, res) => {
-    res.status(200).send('Servidor del Domo Saltado activo y funcionando');
+    res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 
 app.post('/api/login', async (req, res) => {
@@ -149,12 +154,10 @@ io.on('connection', async (socket) => {
 const MONGO_URI = process.env.MONGO_URI;
 const PORT = process.env.PORT || 8080;
 
-// 1. Iniciar servidor Web/HTTP inmediatamente
 server.listen(PORT, '0.0.0.0', () => {
     console.log(`Servidor activo en puerto ${PORT}`);
 });
 
-// 2. Conectar a MongoDB Atlas si existe URI
 if (MONGO_URI) {
     mongoose.connect(MONGO_URI)
         .then(async () => {
