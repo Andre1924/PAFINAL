@@ -8,36 +8,41 @@ const socket = io(API_URL, {
 document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('login-form');
     if (loginForm) {
-        loginForm.addEventListener('submit', (e) => {
+        loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            
             const usernameInput = document.getElementById('username').value;
             const passwordInput = document.getElementById('password').value;
 
-            fetch(`${API_URL}/api/login`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ username: usernameInput, password: passwordInput })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    localStorage.setItem('username', data.username);
+            try {
+                const response = await fetch(`${API_URL}/api/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username: usernameInput, password: passwordInput })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    localStorage.setItem('username', data.username || usernameInput);
                     localStorage.setItem('role', data.role);
+                    
                     if (data.role === 'mozo') {
                         window.location.href = 'mozo.html';
                     } else if (data.role === 'cocinero') {
                         window.location.href = 'cocinero.html';
+                    } else {
+                        window.location.href = 'mozo.html';
                     }
                 } else {
                     alert(data.message || 'Credenciales inválidas');
                 }
-            })
-            .catch(err => {
-                console.error('Error en el login:', err);
-                alert('No se pudo conectar con el servidor.');
-            });
+            } catch (err) {
+                console.error('error en la conexión:', err);
+                alert('no se pudo conectar con el servidor.');
+            }
         });
     }
 
