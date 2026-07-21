@@ -6,7 +6,6 @@ const socket = io(API_URL, {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-    // login original que ya te funcionaba
     const loginForm = document.getElementById('login-form');
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
@@ -15,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const passwordInput = document.getElementById('password').value;
 
             try {
-                const response = await fetch('/api/login', {
+                const response = await fetch(`${API_URL}/api/login`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
