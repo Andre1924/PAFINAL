@@ -1,14 +1,13 @@
-// app.js
-
 const API_URL = 'https://pafinal-production.up.railway.app';
-
 
 const socket = io(API_URL, {
     transports: ['websocket', 'polling']
 });
 
 
-// Cerrar sesión
+// ==============================
+// LOGOUT
+// ==============================
 function logout() {
     localStorage.removeItem('username');
     localStorage.removeItem('role');
@@ -17,33 +16,32 @@ function logout() {
 }
 
 
+// ==============================
+// USUARIO ACTUAL
+// ==============================
+const currentUser = localStorage.getItem('username');
+const currentRole = localStorage.getItem('role');
 
+
+// ==============================
+// LOGIN
+// ==============================
 document.addEventListener('DOMContentLoaded', () => {
 
     const loginForm = document.getElementById('loginForm');
-
 
     if (loginForm) {
 
         loginForm.addEventListener('submit', async function(e) {
 
             e.preventDefault();
-            e.stopPropagation();
-
 
             const usernameInput = document.getElementById('username').value;
             const passwordInput = document.getElementById('password').value;
-
             const errorMsg = document.getElementById('errorMsg');
 
 
-            if (errorMsg) {
-                errorMsg.textContent = '';
-            }
-
-
             try {
-
 
                 const response = await fetch(`${API_URL}/api/login`, {
 
@@ -61,182 +59,153 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
 
 
-
                 const data = await response.json();
-
 
 
                 if (response.ok && data.success) {
 
-
                     localStorage.setItem('username', data.username);
-
                     localStorage.setItem('role', data.role);
 
 
-
                     if (data.role === 'mozo') {
-
                         window.location.href = 'mozo.html';
+                    }
 
-                    } 
-                    else if (data.role === 'cocinero') {
-
+                    if (data.role === 'cocinero') {
                         window.location.href = 'cocinero.html';
-
                     }
 
+                } else {
 
-                } 
-                else {
-
-
-                    if (errorMsg) {
-
-                        errorMsg.textContent = data.message || 'credenciales inválidas';
-
-                    } 
-                    else {
-
-                        alert(data.message || 'credenciales inválidas');
-
-                    }
-
+                    errorMsg.textContent =
+                        data.message || 'Credenciales inválidas';
 
                 }
 
 
+            } catch(error) {
 
-            } catch (err) {
+                console.error(error);
 
-
-                console.error('error en el login:', err);
-
-
-                if (errorMsg) {
-
-                    errorMsg.textContent = 'error de conexión con el servidor';
-
-                }
-
+                errorMsg.textContent =
+                    'Error de conexión con el servidor';
 
             }
 
-
-            return false;
-
-
         });
-
 
     }
 
 
 
-
+    // ==============================
+    // CREAR PEDIDO (MOZO)
+    // ==============================
 
     const orderForm = document.getElementById('order-form');
 
 
     if (orderForm) {
 
-
-        orderForm.addEventListener('submit', (e) => {
-
+        orderForm.addEventListener('submit', (e)=>{
 
             e.preventDefault();
 
 
             const mesa = document.getElementById('mesa').value;
-
             const platos = document.getElementById('platos').value;
-
-            const mozo = localStorage.getItem('username') || 'mozo1';
-
 
 
             socket.emit('new_order', {
 
                 mesa,
                 platos,
-                mozo
+                mozo: localStorage.getItem('username')
 
             });
 
 
-
             orderForm.reset();
-
 
         });
 
-
     }
-
-
-
-
-    socket.on('load_orders', (orders) => {
-
-        renderOrders(orders);
-
-    });
-
-
-
-    socket.on('order_added', (order) => {
-
-        appendOrder(order);
-
-    });
-
-
-
-    socket.on('order_status_changed', (order) => {
-
-        updateOrderInDOM(order);
-
-    });
-
 
 
 });
 
 
 
+// ==============================
+// SOCKETS
+// ==============================
 
 
-function renderOrders(orders) {
+socket.on('load_orders', (orders)=>{
+
+    renderOrders(orders);
+
+});
 
 
-    const container = document.getElementById('orders-container');
+socket.on('order_added',(order)=>{
+
+    appendOrder(order);
+
+});
 
 
-    if (!container) return;
+socket.on('order_status_changed',(order)=>{
+
+    updateOrderInDOM(order);
+
+});
 
 
 
-    container.innerHTML = '';
+
+// ==============================
+// MOSTRAR PEDIDOS
+// ==============================
 
 
+function renderOrders(orders){
 
-    orders.forEach(order => appendOrder(order));
+    const container =
+        document.getElementById('orders-container');
 
+
+    if(!container) return;
+
+
+    container.innerHTML='';
+
+
+    orders.forEach(order=>{
+
+        appendOrder(order);
+
+    });
 
 }
 
 
 
 
+function appendOrder(order){
 
 
-function appendOrder(order) {
+    const container =
+        document.getElementById('orders-container');
 
 
-    const container = document.getElementById('orders-container');
+    if(!container) return;
 
 
-    if (!container) return;
+
+    if(document.getElementById(`order-${order.id}`))
+        return;
 
 
 
@@ -245,8 +214,7 @@ function appendOrder(order) {
 
     card.id = `order-${order.id}`;
 
-
-    card.className = 'order-card';
+    card.className='order-card';
 
 
 
@@ -258,37 +226,94 @@ function appendOrder(order) {
 
         <p><strong>Mozo:</strong> ${order.mozo}</p>
 
-        <p><strong>Estado:</strong> 
-            <span class="status">${order.estado}</span>
+        <p>
+        <strong>Estado:</strong>
+        <span class="status">
+        ${order.estado}
+        </span>
         </p>
 
-        <p><small>${order.timestamp}</small></p>
+        <p>
+        <small>${order.timestamp}</small>
+        </p>
+
+
+        ${
+            localStorage.getItem('role') === 'cocinero'
+
+            ?
+
+            `
+
+            <button onclick="changeStatus('${order.id}','En Preparación')">
+            Aceptar / Preparar
+            </button>
+
+
+            <button onclick="changeStatus('${order.id}','Listo para Servir')">
+            Marcar Listo
+            </button>
+
+            `
+
+            :
+
+            ''
+
+        }
 
     `;
 
 
-
     container.prepend(card);
-
 
 }
 
 
 
 
+// ==============================
+// CAMBIAR ESTADO (COCINA)
+// ==============================
+
+window.changeStatus = function(orderId,newStatus){
 
 
-function updateOrderInDOM(order) {
+    socket.emit('update_order_status',{
+
+        orderId,
+        newStatus
+
+    });
 
 
-    const card = document.getElementById(`order-${order.id}`);
+};
 
 
-    if (card) {
 
 
-        card.querySelector('.status').textContent = order.estado;
+// ==============================
+// ACTUALIZAR ESTADO
+// ==============================
 
+function updateOrderInDOM(order){
+
+
+    const card =
+        document.getElementById(`order-${order.id}`);
+
+
+    if(card){
+
+        const status =
+            card.querySelector('.status');
+
+
+        if(status){
+
+            status.textContent = order.estado;
+
+        }
 
     }
 
