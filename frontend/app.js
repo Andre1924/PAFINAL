@@ -6,16 +6,16 @@ const socket = io(API_URL, {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
+    // login original que ya te funcionaba
     const loginForm = document.getElementById('login-form');
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
             const usernameInput = document.getElementById('username').value;
             const passwordInput = document.getElementById('password').value;
 
             try {
-                const response = await fetch(`${API_URL}/api/login`, {
+                const response = await fetch('/api/login', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -25,23 +25,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const data = await response.json();
 
-                if (response.ok && data.success) {
-                    localStorage.setItem('username', data.username || usernameInput);
+                if (data.success) {
+                    localStorage.setItem('username', data.username);
                     localStorage.setItem('role', data.role);
-                    
                     if (data.role === 'mozo') {
                         window.location.href = 'mozo.html';
                     } else if (data.role === 'cocinero') {
                         window.location.href = 'cocinero.html';
-                    } else {
-                        window.location.href = 'mozo.html';
                     }
                 } else {
-                    alert(data.message || 'Credenciales inválidas');
+                    alert(data.message || 'credenciales inválidas');
                 }
             } catch (err) {
-                console.error('error en la conexión:', err);
-                alert('no se pudo conectar con el servidor.');
+                console.error('error en el login:', err);
             }
         });
     }
