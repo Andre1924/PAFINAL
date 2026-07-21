@@ -7,35 +7,33 @@ let socket;
 // LOGOUT
 // ==============================
 
-function logout() {
+function logout(){
 
     localStorage.removeItem('username');
     localStorage.removeItem('role');
 
-    window.location.href = 'index.html';
+    window.location.href='index.html';
 
 }
+
 
 
 // ==============================
 // INICIO
 // ==============================
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded',()=>{
 
 
-    // ==============================
-    // SOCKET
-    // ==============================
-
-    socket = io(API_URL, {
-        transports: ['websocket', 'polling']
+    socket = io(API_URL,{
+        transports:['websocket','polling']
     });
 
 
-    socket.on('connect', ()=>{
 
-        console.log('Socket conectado:', socket.id);
+    socket.on('connect',()=>{
+
+        console.log("Socket conectado:",socket.id);
 
     });
 
@@ -43,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     socket.on('load_orders',(orders)=>{
 
-        console.log('Pedidos cargados:', orders);
+        console.log("Pedidos cargados:",orders);
 
         renderOrders(orders);
 
@@ -52,8 +50,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     socket.on('order_added',(order)=>{
-
-        console.log('Nuevo pedido:', order);
 
         appendOrder(order);
 
@@ -71,125 +67,83 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-    // ==============================
+    // ==========================
     // LOGIN
-    // ==============================
+    // ==========================
 
-    const loginForm = document.getElementById('loginForm');
+
+    const loginForm=document.getElementById('loginForm');
 
 
     if(loginForm){
 
 
-        loginForm.addEventListener('submit', async (e)=>{
+        loginForm.addEventListener('submit',async(e)=>{
 
 
             e.preventDefault();
 
 
-
-            const username =
+            const username=
             document.getElementById('username').value;
 
 
-            const password =
+            const password=
             document.getElementById('password').value;
 
 
-            const errorMsg =
-            document.getElementById('errorMsg');
 
-
-
-            try{
-
-
-                const response = await fetch(`${API_URL}/api/login`,{
-
-
+            const response=await fetch(
+                `${API_URL}/api/login`,
+                {
                     method:'POST',
-
-
                     headers:{
                         'Content-Type':'application/json'
                     },
-
-
                     body:JSON.stringify({
-
                         username,
                         password
-
                     })
-
-
-                });
-
-
-
-                const data = await response.json();
-
-
-
-                if(response.ok && data.success){
-
-
-                    localStorage.setItem(
-                        'username',
-                        data.username
-                    );
-
-
-                    localStorage.setItem(
-                        'role',
-                        data.role
-                    );
-
-
-
-                    if(data.role === 'mozo'){
-
-                        window.location.href='mozo.html';
-
-                    }else{
-
-                        window.location.href='cocinero.html';
-
-                    }
-
-
-
-                }else{
-
-
-                    if(errorMsg){
-
-                        errorMsg.textContent =
-                        data.message || 'Credenciales inválidas';
-
-                    }
-
-
                 }
+            );
 
 
 
-            }catch(error){
+            const data=await response.json();
 
 
-                console.error(error);
+
+            if(response.ok && data.success){
 
 
-                if(errorMsg){
+                localStorage.setItem(
+                    'username',
+                    data.username
+                );
 
-                    errorMsg.textContent =
-                    'Error de conexión con el servidor';
 
-                }
+                localStorage.setItem(
+                    'role',
+                    data.role
+                );
+
+
+
+                if(data.role==='mozo')
+                    window.location.href='mozo.html';
+                else
+                    window.location.href='cocinero.html';
+
+
+
+            }else{
+
+
+                document.getElementById('errorMsg').textContent =
+                data.message;
 
 
             }
-
 
 
         });
@@ -201,11 +155,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-    // ==============================
+    // ==========================
     // CREAR PEDIDO
-    // ==============================
+    // ==========================
 
-    const orderForm =
+
+    const orderForm=
     document.getElementById('order-form');
 
 
@@ -219,26 +174,20 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
 
 
-
-            const mesa =
+            const mesa=
             document.getElementById('mesa').value;
 
 
-
-            const platos =
+            const platos=
             document.getElementById('platos').value;
 
 
 
             socket.emit('new_order',{
 
-
                 mesa,
-
                 platos,
-
                 mozo:localStorage.getItem('username')
-
 
             });
 
@@ -253,7 +202,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
+
 });
+
 
 
 
@@ -263,15 +214,15 @@ document.addEventListener('DOMContentLoaded', () => {
 // MOSTRAR PEDIDOS
 // ==============================
 
+
 function renderOrders(orders){
 
 
-    const container =
+    const container=
     document.getElementById('orders-container');
 
 
     if(!container)return;
-
 
 
     container.innerHTML='';
@@ -295,7 +246,7 @@ function renderOrders(orders){
 function appendOrder(order){
 
 
-    const container =
+    const container=
     document.getElementById('orders-container');
 
 
@@ -303,70 +254,86 @@ function appendOrder(order){
 
 
 
-    if(document.getElementById(`order-${order.id}`)){
-
+    if(document.getElementById(`order-${order.id}`))
         return;
 
-    }
+
+
+    const card=document.createElement('div');
+
+
+    card.id=`order-${order.id}`;
+
+    card.className='order-card';
 
 
 
-    const card =
-    document.createElement('div');
-
-
-
-    card.id =
-    `order-${order.id}`;
-
-
-
-    card.className =
-    'order-card';
-
-
-
-    card.innerHTML = `
-
+    card.innerHTML=`
 
         <p><strong>Mesa:</strong> ${order.mesa}</p>
 
-
         <p><strong>Platos:</strong> ${order.platos}</p>
-
 
         <p><strong>Mozo:</strong> ${order.mozo}</p>
 
 
         <p>
-            <strong>Estado:</strong>
-            <span class="status">
-                ${order.estado}
-            </span>
+        <strong>Estado:</strong>
+        <span class="status">
+        ${order.estado}
+        </span>
         </p>
 
 
-        <p>
-            <small>${order.timestamp}</small>
-        </p>
+        <small>${order.timestamp}</small>
 
 
 
         ${
-            localStorage.getItem('role') === 'cocinero'
+            localStorage.getItem('role')==='cocinero'
 
             ?
 
             `
 
-            <button onclick="changeStatus('${order.id}','En Preparación')">
-            Aceptar / Preparar
-            </button>
+            <br><br>
+
+            ${
+                order.estado==='Pendiente'
+
+                ?
+
+                `
+                <button onclick="changeStatus('${order.id}','En Preparación')">
+                Aceptar / Preparar
+                </button>
+                `
+
+                :
+
+                ''
+
+            }
 
 
-            <button onclick="changeStatus('${order.id}','Listo para Servir')">
-            Marcar Listo
-            </button>
+
+            ${
+                order.estado==='En Preparación'
+
+                ?
+
+                `
+                <button onclick="changeStatus('${order.id}','Listo para Servir')">
+                Marcar como Listo
+                </button>
+                `
+
+                :
+
+                ''
+
+            }
+
 
             `
 
@@ -375,6 +342,7 @@ function appendOrder(order){
             ''
 
         }
+
 
 
     `;
@@ -391,17 +359,18 @@ function appendOrder(order){
 
 
 
+
 // ==============================
-// CAMBIAR ESTADO COCINA
+// CAMBIAR ESTADO
 // ==============================
 
-window.changeStatus = function(orderId,newStatus){
+
+window.changeStatus=function(orderId,newStatus){
 
 
     socket.emit('update_order_status',{
 
         orderId,
-
         newStatus
 
     });
@@ -414,14 +383,12 @@ window.changeStatus = function(orderId,newStatus){
 
 
 
-// ==============================
-// ACTUALIZAR ESTADO
-// ==============================
+
 
 function updateOrderInDOM(order){
 
 
-    const card =
+    const card=
     document.getElementById(`order-${order.id}`);
 
 
@@ -429,16 +396,13 @@ function updateOrderInDOM(order){
     if(card){
 
 
-        const status =
+        const status=
         card.querySelector('.status');
 
 
-        if(status){
+        if(status)
+            status.textContent=order.estado;
 
-            status.textContent =
-            order.estado;
-
-        }
 
 
     }
