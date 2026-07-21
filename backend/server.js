@@ -143,24 +143,43 @@ io.on('connection', async (socket) => {
         }
     });
 });
-
 // ==========================================
 // CONEXIÓN A MONGODB Y APERTURA DE PUERTO
 // ==========================================
+
 const MONGO_URI = process.env.MONGO_URI;
 const PORT = process.env.PORT || 8080;
 
-server.listen(PORT, '0.0.0.0', () => {
-    console.log(`Servidor activo en puerto ${PORT}`);
-});
 
 if (MONGO_URI) {
+
     mongoose.connect(MONGO_URI)
+
         .then(async () => {
+
             console.log('Conectado a MongoDB Atlas');
+
             await crearUsuariosIniciales();
+
+
+            server.listen(PORT, '0.0.0.0', () => {
+
+                console.log(`Servidor activo en puerto ${PORT}`);
+
+            });
+
+
         })
-        .catch(err => console.error('Error al conectar a MongoDB:', err));
+
+        .catch(err => {
+
+            console.error('Error al conectar a MongoDB:', err);
+
+        });
+
+
 } else {
+
     console.warn('ADVERTENCIA: La variable MONGO_URI no está definida en Railway.');
+
 }
