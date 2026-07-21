@@ -1,3 +1,4 @@
+// server.js
 require('dotenv').config();
 const express = require('express');
 const http = require('http');
@@ -150,7 +151,7 @@ const MONGO_URI = process.env.MONGO_URI;
 const PORT = process.env.PORT || 8080;
 
 server.listen(PORT, '0.0.0.0', () => {
-    console.log(Servidor activo en puerto ${PORT});
+    console.log(`Servidor activo en puerto ${PORT}`);
 });
 
 if (MONGO_URI) {
