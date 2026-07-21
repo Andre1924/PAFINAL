@@ -6,6 +6,41 @@ const socket = io(API_URL, {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
+    const loginForm = document.getElementById('login-form');
+    if (loginForm) {
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const usernameInput = document.getElementById('username').value;
+            const passwordInput = document.getElementById('password').value;
+
+            fetch(`${API_URL}/api/login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username: usernameInput, password: passwordInput })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    localStorage.setItem('username', data.username);
+                    localStorage.setItem('role', data.role);
+                    if (data.role === 'mozo') {
+                        window.location.href = 'mozo.html';
+                    } else if (data.role === 'cocinero') {
+                        window.location.href = 'cocinero.html';
+                    }
+                } else {
+                    alert(data.message || 'Credenciales inválidas');
+                }
+            })
+            .catch(err => {
+                console.error('Error en el login:', err);
+                alert('No se pudo conectar con el servidor.');
+            });
+        });
+    }
+
     const orderForm = document.getElementById('order-form');
     if (orderForm) {
         orderForm.addEventListener('submit', (e) => {
