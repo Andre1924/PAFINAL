@@ -33,33 +33,99 @@ document.addEventListener('DOMContentLoaded',()=>{
 
     socket.on('connect',()=>{
 
-        console.log("Socket conectado:",socket.id);
+        console.log("Socket conectado:", socket.id);
 
     });
 
+
+
+    // ==========================
+    // CARGAR PEDIDOS EXISTENTES
+    // ==========================
 
 
     socket.on('load_orders',(orders)=>{
 
-        console.log("Pedidos cargados:",orders);
+
+        const role = localStorage.getItem('role');
+        const username = localStorage.getItem('username');
+
+
+
+        // MOZO SOLO VE SUS PEDIDOS
+
+        if(role === 'mozo'){
+
+            orders = orders.filter(order =>
+                order.mozo === username
+            );
+
+        }
+
+
 
         renderOrders(orders);
 
+
     });
 
+
+
+
+
+    // ==========================
+    // NUEVO PEDIDO
+    // ==========================
 
 
     socket.on('order_added',(order)=>{
 
+
+        const role = localStorage.getItem('role');
+        const username = localStorage.getItem('username');
+
+
+
+        if(role === 'mozo' && order.mozo !== username){
+
+            return;
+
+        }
+
+
+
         appendOrder(order);
+
 
     });
 
 
 
+
+
+    // ==========================
+    // CAMBIO DE ESTADO
+    // ==========================
+
+
     socket.on('order_status_changed',(order)=>{
 
+
+        const role = localStorage.getItem('role');
+        const username = localStorage.getItem('username');
+
+
+
+        if(role === 'mozo' && order.mozo !== username){
+
+            return;
+
+        }
+
+
+
         updateOrderInDOM(order);
+
 
     });
 
@@ -84,32 +150,42 @@ document.addEventListener('DOMContentLoaded',()=>{
             e.preventDefault();
 
 
-            const username=
+
+            const username =
             document.getElementById('username').value;
 
 
-            const password=
+
+            const password =
             document.getElementById('password').value;
 
 
 
-            const response=await fetch(
+
+            const response = await fetch(
                 `${API_URL}/api/login`,
                 {
+
                     method:'POST',
+
                     headers:{
                         'Content-Type':'application/json'
                     },
+
                     body:JSON.stringify({
+
                         username,
                         password
+
                     })
+
                 }
             );
 
 
 
-            const data=await response.json();
+            const data = await response.json();
+
 
 
 
@@ -122,6 +198,7 @@ document.addEventListener('DOMContentLoaded',()=>{
                 );
 
 
+
                 localStorage.setItem(
                     'role',
                     data.role
@@ -129,10 +206,15 @@ document.addEventListener('DOMContentLoaded',()=>{
 
 
 
-                if(data.role==='mozo')
+                if(data.role === 'mozo'){
+
                     window.location.href='mozo.html';
-                else
+
+                }else{
+
                     window.location.href='cocinero.html';
+
+                }
 
 
 
@@ -146,10 +228,12 @@ document.addEventListener('DOMContentLoaded',()=>{
             }
 
 
+
         });
 
 
     }
+
 
 
 
@@ -160,7 +244,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     // ==========================
 
 
-    const orderForm=
+    const orderForm =
     document.getElementById('order-form');
 
 
@@ -174,20 +258,27 @@ document.addEventListener('DOMContentLoaded',()=>{
             e.preventDefault();
 
 
-            const mesa=
+
+            const mesa =
             document.getElementById('mesa').value;
 
 
-            const platos=
+
+            const platos =
             document.getElementById('platos').value;
 
 
 
             socket.emit('new_order',{
 
+
                 mesa,
+
                 platos,
-                mozo:localStorage.getItem('username')
+
+                mozo:
+                localStorage.getItem('username')
+
 
             });
 
@@ -196,7 +287,9 @@ document.addEventListener('DOMContentLoaded',()=>{
             orderForm.reset();
 
 
+
         });
+
 
 
     }
@@ -204,6 +297,9 @@ document.addEventListener('DOMContentLoaded',()=>{
 
 
 });
+
+
+
 
 
 
@@ -218,11 +314,13 @@ document.addEventListener('DOMContentLoaded',()=>{
 function renderOrders(orders){
 
 
-    const container=
+    const container =
     document.getElementById('orders-container');
 
 
+
     if(!container)return;
+
 
 
     container.innerHTML='';
@@ -231,12 +329,17 @@ function renderOrders(orders){
 
     orders.forEach(order=>{
 
+
         appendOrder(order);
+
 
     });
 
 
+
 }
+
+
 
 
 
@@ -246,11 +349,14 @@ function renderOrders(orders){
 function appendOrder(order){
 
 
-    const container=
+
+    const container =
     document.getElementById('orders-container');
 
 
+
     if(!container)return;
+
 
 
 
@@ -259,100 +365,138 @@ function appendOrder(order){
 
 
 
-    const card=document.createElement('div');
 
 
-    card.id=`order-${order.id}`;
-
-    card.className='order-card';
-
-
-
-    card.innerHTML=`
-
-        <p><strong>Mesa:</strong> ${order.mesa}</p>
-
-        <p><strong>Platos:</strong> ${order.platos}</p>
-
-        <p><strong>Mozo:</strong> ${order.mozo}</p>
-
-
-        <p>
-        <strong>Estado:</strong>
-        <span class="status">
-        ${order.estado}
-        </span>
-        </p>
-
-
-        <small>${order.timestamp}</small>
+    const card =
+    document.createElement('div');
 
 
 
-        ${
-            localStorage.getItem('role')==='cocinero'
+    card.id =
+    `order-${order.id}`;
 
-            ?
 
-            `
+
+    card.className =
+    'order-card';
+
+
+
+
+    let buttons='';
+
+
+
+    if(localStorage.getItem('role') === 'cocinero'){
+
+
+
+        if(order.estado === 'Pendiente'){
+
+
+            buttons += `
 
             <br><br>
 
-            ${
-                order.estado==='Pendiente'
+            <button onclick="changeStatus('${order.id}','En Preparación')">
 
-                ?
+            Aceptar / Preparar
 
-                `
-                <button onclick="changeStatus('${order.id}','En Preparación')">
-                Aceptar / Preparar
-                </button>
-                `
+            </button>
 
-                :
+            `;
 
-                ''
-
-            }
-
-
-
-            ${
-                order.estado==='En Preparación'
-
-                ?
-
-                `
-                <button onclick="changeStatus('${order.id}','Listo para Servir')">
-                Marcar como Listo
-                </button>
-                `
-
-                :
-
-                ''
-
-            }
-
-
-            `
-
-            :
-
-            ''
 
         }
 
+
+
+        if(order.estado === 'En Preparación'){
+
+
+            buttons += `
+
+            <br><br>
+
+            <button onclick="changeStatus('${order.id}','Listo para Servir')">
+
+            Marcar como Listo
+
+            </button>
+
+
+            `;
+
+
+        }
+
+
+    }
+
+
+
+
+
+    card.innerHTML = `
+
+
+        <p>
+        <strong>Mesa:</strong>
+        ${order.mesa}
+        </p>
+
+
+        <p>
+        <strong>Platos:</strong>
+        ${order.platos}
+        </p>
+
+
+
+        <p>
+        <strong>Mozo:</strong>
+        ${order.mozo}
+        </p>
+
+
+
+        <p>
+
+        <strong>Estado:</strong>
+
+        <span class="status">
+
+        ${order.estado}
+
+        </span>
+
+        </p>
+
+
+
+        <small>
+
+        ${order.timestamp}
+
+        </small>
+
+
+
+        ${buttons}
 
 
     `;
 
 
 
+
     container.prepend(card);
 
 
+
 }
+
+
 
 
 
@@ -368,12 +512,17 @@ function appendOrder(order){
 window.changeStatus=function(orderId,newStatus){
 
 
+
     socket.emit('update_order_status',{
 
+
         orderId,
+
         newStatus
 
+
     });
+
 
 
 };
@@ -385,10 +534,17 @@ window.changeStatus=function(orderId,newStatus){
 
 
 
+
+// ==============================
+// ACTUALIZAR TARJETA
+// ==============================
+
+
 function updateOrderInDOM(order){
 
 
-    const card=
+
+    const card =
     document.getElementById(`order-${order.id}`);
 
 
@@ -396,16 +552,15 @@ function updateOrderInDOM(order){
     if(card){
 
 
-        const status=
-        card.querySelector('.status');
-
-
-        if(status)
-            status.textContent=order.estado;
-
+        card.remove();
 
 
     }
+
+
+
+    appendOrder(order);
+
 
 
 }
