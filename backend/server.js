@@ -4,45 +4,12 @@ const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
 const mongoose = require('mongoose');
-const path = require('path');
-const fs = require('fs');
 
 const app = express();
 const server = http.createServer(app);
 
 app.use(cors());
 app.use(express.json());
-
-// ==========================================
-// DETECCIÓN AUTOMÁTICA DE LA CARPETA FRONTEND
-// ==========================================
-const candidatos = [
-    path.join(__dirname, '..', 'frontend'),
-    path.join(__dirname, 'frontend'),
-    path.join(process.cwd(), 'frontend'),
-    path.join(process.cwd(), '..', 'frontend'),
-    '/app/frontend',
-    '/frontend'
-];
-
-let FRONTEND_DIR = null;
-for (const candidato of candidatos) {
-    if (fs.existsSync(path.join(candidato, 'index.html'))) {
-        FRONTEND_DIR = candidato;
-        break;
-    }
-}
-
-console.log('__dirname:', __dirname);
-console.log('process.cwd():', process.cwd());
-console.log('Candidatos probados:', candidatos);
-console.log('FRONTEND_DIR encontrado:', FRONTEND_DIR);
-
-if (FRONTEND_DIR) {
-    app.use(express.static(FRONTEND_DIR));
-} else {
-    console.error('ADVERTENCIA: No se encontró la carpeta frontend en ninguna ruta candidata.');
-}
 
 const io = new Server(server, {
     cors: { 
@@ -89,34 +56,10 @@ async function crearUsuariosIniciales() {
 }
 
 // ==========================================
-// RUTA DE DIAGNÓSTICO (TEMPORAL)
-// ==========================================
-app.get('/debug', (req, res) => {
-    const info = {
-        __dirname: __dirname,
-        cwd: process.cwd(),
-        FRONTEND_DIR: FRONTEND_DIR,
-        raiz: fs.existsSync('/') ? fs.readdirSync('/') : 'no existe /',
-        app: fs.existsSync('/app') ? fs.readdirSync('/app') : 'no existe /app',
-        backend: fs.existsSync(__dirname) ? fs.readdirSync(__dirname) : 'no existe backend dir',
-        candidatos: candidatos.map(c => ({
-            ruta: c,
-            existe_carpeta: fs.existsSync(c),
-            existe_index: fs.existsSync(path.join(c, 'index.html'))
-        }))
-    };
-    res.json(info);
-});
-
-// ==========================================
 // RUTAS REST
 // ==========================================
 app.get('/', (req, res) => {
-    if (FRONTEND_DIR) {
-        res.sendFile(path.join(FRONTEND_DIR, 'index.html'));
-    } else {
-        res.status(500).send('No se encontró el frontend. Revisa /debug para más info.');
-    }
+    res.json({ status: 'ok', message: 'Backend de Domo Saltado funcionando correctamente.' });
 });
 
 app.post('/api/login', async (req, res) => {
