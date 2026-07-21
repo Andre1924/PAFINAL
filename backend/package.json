@@ -4,10 +4,11 @@
   "description": "Backend para Domo Saltado",
   "main": "server.js",
   "scripts": {
+    "start": "node server.js",
     "chamoDB": "node server.js"
   },
   "dependencies": {
-    "cors": "^2.8.6",
+    "cors": "^2.8.5",
     "dotenv": "^16.6.1",
     "express": "^4.22.2",
     "mongoose": "^9.8.0",
