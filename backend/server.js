@@ -4,16 +4,12 @@ const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
 const mongoose = require('mongoose');
-const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
 
 app.use(cors());
 app.use(express.json());
-
-// Servir archivos estáticos si los tienes en la carpeta raíz del backend
-app.use(express.static(__dirname));
 
 const io = new Server(server, {
     cors: { 
@@ -63,7 +59,7 @@ async function crearUsuariosIniciales() {
 // RUTAS REST
 // ==========================================
 app.get('/', (req, res) => {
-    res.send('Servidor del Domo Saltado activo y conectado a MongoDB Atlas');
+    res.send('Servidor del Domo Saltado activo y funcionando');
 });
 
 app.post('/api/login', async (req, res) => {
