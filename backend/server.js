@@ -1,4 +1,3 @@
-// server.js
 
 require('dotenv').config();
 
@@ -17,10 +16,6 @@ const server = http.createServer(app);
 
 
 
-// ==============================
-// MIDDLEWARE
-// ==============================
-
 
 app.use(cors({
     origin:"*"
@@ -28,13 +23,6 @@ app.use(cors({
 
 
 app.use(express.json());
-
-
-
-
-// ==============================
-// SOCKET.IO
-// ==============================
 
 
 const io = new Server(server,{
@@ -48,17 +36,6 @@ const io = new Server(server,{
     }
 
 });
-
-
-
-
-
-
-
-// ==============================
-// MODELOS MONGODB
-// ==============================
-
 
 
 const userSchema = new mongoose.Schema({
@@ -192,17 +169,6 @@ const Order = mongoose.model(
 
 
 
-
-
-
-
-
-// ==============================
-// CREAR USUARIOS INICIALES
-// ==============================
-
-
-
 async function crearUsuariosIniciales(){
 
 
@@ -270,17 +236,6 @@ async function crearUsuariosIniciales(){
 
 }
 
-
-
-
-
-
-
-
-
-// ==============================
-// RUTAS
-// ==============================
 
 
 
@@ -391,19 +346,6 @@ app.post('/api/login',async(req,res)=>{
 
 
 
-
-
-
-
-
-
-
-
-// ==============================
-// SOCKETS
-// ==============================
-
-
 io.on('connection',async(socket)=>{
 
 
@@ -412,12 +354,6 @@ io.on('connection',async(socket)=>{
         "Cliente conectado:",
         socket.id
     );
-
-
-
-
-
-    // Cargar pedidos existentes
 
 
     try{
@@ -483,18 +419,6 @@ io.on('connection',async(socket)=>{
 
 
     }
-
-
-
-
-
-
-
-
-
-    // ==========================
-    // NUEVO PEDIDO
-    // ==========================
 
 
 
@@ -577,17 +501,6 @@ io.on('connection',async(socket)=>{
 
     });
 
-
-
-
-
-
-
-
-
-    // ==========================
-    // CAMBIAR ESTADO
-    // ==========================
 
 
 
@@ -738,18 +651,6 @@ io.on('connection',async(socket)=>{
 
 
 });
-
-
-
-
-
-
-
-
-
-// ==============================
-// CONEXION MONGO + SERVIDOR
-// ==============================
 
 
 
