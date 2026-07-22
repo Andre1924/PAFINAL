@@ -1,7 +1,3 @@
-/* ==========================================================================
-   Domo Saltado — sistema de comandas
-   Paleta: papel de ticket + tintas de cocina peruana
-   ========================================================================== */
 
 :root {
   --paper: #f7f2e7;
@@ -49,8 +45,6 @@ body {
   box-shadow: none;
 }
 
-/* ---- Wordmark / masthead --------------------------------------------- */
-
 .masthead { text-align: center; margin-bottom: 28px; }
 
 .masthead .eyebrow {
@@ -84,8 +78,6 @@ h2 {
   border-bottom: 2px dashed var(--line);
 }
 
-/* ---- Ticket card (login + panels wrap content in this) ---------------- */
-
 .ticket {
   position: relative;
   max-width: 380px;
@@ -116,8 +108,6 @@ h2 {
   box-shadow: var(--shadow-card);
   padding: 28px clamp(18px, 4vw, 36px) 36px;
 }
-
-/* ---- Forms -------------------------------------------------------------- */
 
 .form-group { margin-bottom: 20px; }
 
@@ -184,8 +174,6 @@ button:hover { background: var(--aji); color: var(--ink); }
   color: var(--rocoto) !important;
 }
 
-/* ---- Top bar / logout --------------------------------------------------- */
-
 .logout-btn {
   float: right;
   width: auto;
@@ -197,8 +185,6 @@ button:hover { background: var(--aji); color: var(--ink); }
 }
 
 .logout-btn:hover { background: var(--rocoto); color: var(--paper); }
-
-/* ---- Orders board -------------------------------------------------------- */
 
 #ordersList, #kitchenOrdersList {
   display: grid;
@@ -239,8 +225,6 @@ button:hover { background: var(--aji); color: var(--ink); }
 .order-card:has(.badge.pendiente) { border-left-color: var(--aji); }
 .order-card:has(.badge.preparacion) { border-left-color: var(--morada); }
 .order-card:has(.badge.listo) { border-left-color: var(--palta); }
-
-/* ---- Status stamps -------------------------------------------------------- */
 
 .badge {
   display: inline-block;
