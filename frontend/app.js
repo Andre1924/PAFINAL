@@ -2,11 +2,6 @@ const API_URL = 'https://pafinal-production.up.railway.app';
 
 let socket;
 
-
-// ==============================
-// LOGOUT
-// ==============================
-
 function logout(){
 
     localStorage.removeItem('username');
@@ -16,11 +11,6 @@ function logout(){
 
 }
 
-
-
-// ==============================
-// INICIO
-// ==============================
 
 document.addEventListener('DOMContentLoaded',()=>{
 
@@ -37,22 +27,12 @@ document.addEventListener('DOMContentLoaded',()=>{
 
     });
 
-
-
-    // ==========================
-    // CARGAR PEDIDOS EXISTENTES
-    // ==========================
-
-
     socket.on('load_orders',(orders)=>{
 
 
         const role = localStorage.getItem('role');
         const username = localStorage.getItem('username');
 
-
-
-        // MOZO SOLO VE SUS PEDIDOS
 
         if(role === 'mozo'){
 
@@ -69,13 +49,6 @@ document.addEventListener('DOMContentLoaded',()=>{
 
     });
 
-
-
-
-
-    // ==========================
-    // NUEVO PEDIDO
-    // ==========================
 
 
     socket.on('order_added',(order)=>{
@@ -102,12 +75,6 @@ document.addEventListener('DOMContentLoaded',()=>{
 
 
 
-
-    // ==========================
-    // CAMBIO DE ESTADO
-    // ==========================
-
-
     socket.on('order_status_changed',(order)=>{
 
 
@@ -130,12 +97,6 @@ document.addEventListener('DOMContentLoaded',()=>{
     });
 
 
-
-
-
-    // ==========================
-    // LOGIN
-    // ==========================
 
 
     const loginForm=document.getElementById('loginForm');
@@ -237,13 +198,6 @@ document.addEventListener('DOMContentLoaded',()=>{
 
 
 
-
-
-    // ==========================
-    // CREAR PEDIDO
-    // ==========================
-
-
     const orderForm =
     document.getElementById('order-form');
 
@@ -302,13 +256,6 @@ document.addEventListener('DOMContentLoaded',()=>{
 
 
 
-
-
-
-
-// ==============================
-// MOSTRAR PEDIDOS
-// ==============================
 
 
 function renderOrders(orders){
@@ -499,16 +446,6 @@ function appendOrder(order){
 
 
 
-
-
-
-
-
-// ==============================
-// CAMBIAR ESTADO
-// ==============================
-
-
 window.changeStatus=function(orderId,newStatus){
 
 
@@ -527,17 +464,6 @@ window.changeStatus=function(orderId,newStatus){
 
 };
 
-
-
-
-
-
-
-
-
-// ==============================
-// ACTUALIZAR TARJETA
-// ==============================
 
 
 function updateOrderInDOM(order){
