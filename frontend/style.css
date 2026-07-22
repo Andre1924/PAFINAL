@@ -6,13 +6,13 @@
   --ink-soft: #6b6259;
   --line: #ddd2ba;
 
-  --aji: #e8a23a;        /* pendiente */
+  --aji: #e8a23a;       
   --aji-tint: #fbeacd;
-  --morada: #5c3568;     /* preparación */
+  --morada: #5c3568;   
   --morada-tint: #ece2f0;
-  --palta: #3f7a52;      /* listo */
+  --palta: #3f7a52;    
   --palta-tint: #e2ede4;
-  --rocoto: #c13a2e;     /* cerrar sesión / alerta */
+  --rocoto: #c13a2e;    
   --rocoto-tint: #f6e0dd;
 
   --radius: 3px;
